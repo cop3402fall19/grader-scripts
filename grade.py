@@ -40,16 +40,14 @@ def get_submissions():
                 submissions.append([student_id, None])
                 print(filename + " does not have a valid github link: " +
                         repository)
-
     
     shutil.rmtree(temp_dir)
     
     return submissions
 
 
-def clone(submissions):
+def clone(submissions, student_repos):
 
-    student_repos = "./repos/"
     url = "git@github.com:cop3402fall19/project-"
     os.mkdir(student_repos)
 
@@ -58,7 +56,6 @@ def clone(submissions):
     for repository in submissions:
         if repository[1] is not None:
             path = student_repos + repository[1]
-            
             try:
                 os.mkdir(path)
                 git = url + repository[1] + ".git"
@@ -68,7 +65,16 @@ def clone(submissions):
 
 
 
-            
+
+def fetch(submissions, student_repos):
+    for index, repository in enumerate(submissions):
+        if repository[1] is not None:
+            for remote in Repo(student_repos + repository[1]).remotes:
+                remote.fetch()
+                print(repository[1])
+    
+
+
 # TODO: pull, checkout tag, build
 
 # TODO: run test cases and compute grade
@@ -76,8 +82,13 @@ def clone(submissions):
 # TODO: Update grades
 
 
+student_repos = "./student_repos/"
 
 submissions = get_submissions()
 
-clone(submissions)
+if os.path.isdir(student_repos):
+    fetch(submissions, student_repos)
+else:
+    clone(submissions, student_repos)
+
 
