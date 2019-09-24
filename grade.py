@@ -6,11 +6,12 @@ import zipfile
 import re
 import getpass
 
-temp_dir = "./tmp/"
-url = "https://github.com/cop3402fall19/project-"
 
 def get_submissions():
 
+    url = "https://github.com/cop3402fall19/project-"
+    temp_dir = "./tmp/"
+    
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
 
@@ -48,20 +49,19 @@ def get_submissions():
 
 def clone(submissions):
 
-    os.mkdir(temp_dir)
-    
-    username = input("Username: ") 
-    password = getpass.getpass()
+    student_repos = "./repos/"
+    url = "git@github.com:cop3402fall19/project-"
+    os.mkdir(student_repos)
 
     num_sub = len(submissions)
     count = 0
     for repository in submissions:
         if repository[1] is not None:
-            path = temp_dir + repository[1]
+            path = student_repos + repository[1]
             
             try:
                 os.mkdir(path)
-                git = url[:8] + username + ":" + password + "@" + url[8:] + repository[1]
+                git = url + repository[1] + ".git"
                 print(Repo.clone_from(git, path))
             except OSError:
                 pass
