@@ -46,7 +46,7 @@ def get_submissions(log):
                 log.write("invalid github link: " + repository + "\n")
                 log.write("Student ID: " + student_id + "\n")
     
-#    shutil.rmtree(temp_dir)
+    shutil.rmtree(temp_dir)
     
     return submissions
 
