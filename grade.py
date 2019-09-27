@@ -28,8 +28,9 @@ def get_submissions(log):
         with open(temp_dir + "/" + filename, "r") as f:
             data = f.read()
                 
+            student_id = re.search("\d+", filename).group(0)
+            
             try:
-                student_id = re.search("\d+", filename).group(0)
                 repository = re.search("url=" + url + "(.*)\"", data).group(1)
                 
                 if ".git" in repository:
@@ -38,14 +39,14 @@ def get_submissions(log):
                     repository = repository.split("/")[0]
 
                 submissions.append([student_id, repository, 12])
+
             except AttributeError:
-                student_id = re.search("\d+", filename).group(0)
                 repository = re.search("url=(.*)\"", data).group(1)
                 submissions.append([student_id, None, 0])
                 log.write("invalid github link: " + repository + "\n")
                 log.write("Student ID: " + student_id + "\n")
     
-    shutil.rmtree(temp_dir)
+#    shutil.rmtree(temp_dir)
     
     return submissions
 
@@ -123,7 +124,6 @@ def make_repo(path, repository):
 # TODO: Update grades
 # Creates the CSV file for import. 
 
- 
 
 if len(sys.argv) == 1:
     print("Please provide a project tag.")
