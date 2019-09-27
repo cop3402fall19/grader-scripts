@@ -1,3 +1,4 @@
 *.csv
 *.zip
 /student_repos/*
+*.log
