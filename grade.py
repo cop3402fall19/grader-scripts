@@ -1,12 +1,15 @@
-from git import Repo
+from git import Repo, Git
 import csv
 import os
 import shutil
 import zipfile
 import re
-import testcasesScript
+import sys
 
 
+# Unzips the submissions.zip file downloaded from HW1 and parses through the
+# html files to get the students' ID and repository names. Returns a list of
+# submissions cointaining IDs and repo names.
 def get_submissions():
 
     url = "https://github.com/cop3402fall19/project-"
@@ -46,49 +49,51 @@ def get_submissions():
     return submissions
 
 
-def clone(submissions, student_repos):
+def clone_checkout(submissions, project):
 
     url = "git@github.com:cop3402fall19/project-"
-    os.mkdir(student_repos)
+    student_repos = "./student_repos/"
 
-    num_sub = len(submissions)
-    count = 0
+    
+    if os.path.isdir(student_repos):
+        created_dir = False
+    else:
+        os.mkdir(student_repos)
+        created_dir = True
+
     for repository in submissions:
         if repository[1] is not None:
             path = student_repos + repository[1]
-            try:
-                os.mkdir(path)
-                git = url + repository[1] + ".git"
-                print(Repo.clone_from(git, path))
-            except OSError:
-                pass
 
+            if created_dir:
+                try:
+                    os.mkdir(path)
+                    git = url + repository[1] + ".git"
+                    Repo.clone_from(git, path)
+                    print("Cloning: " + repository[1])
+                except OSError:
+                    print(OSError)
+                    pass
 
+            else:
+                for remote in Repo(path).remotes:
+                    remote.fetch()
+                    print("Fetching: " + repository[1])
+            
+            Git(path).checkout(project)
 
-
-def fetch(submissions, student_repos):
-    for index, repository in enumerate(submissions):
-        if repository[1] is not None:
-            for remote in Repo(student_repos + repository[1]).remotes:
-                remote.fetch()
-                print(repository[1])
-    
-
-
-# TODO: pull, checkout tag, build
 
 # TODO: run test cases and compute grade
 
 # TODO: Update grades
 
+if len(sys.argv) == 1:
+    print("Please provide a project tag.")
+    sys.exit()
 
-student_repos = "./student_repos/"
 
 submissions = get_submissions()
 
-if os.path.isdir(student_repos):
-    fetch(submissions, student_repos)
-else:
-    clone(submissions, student_repos)
+clone_checkout(submissions, sys.argv[1])
 
 
