@@ -34,26 +34,31 @@ def buildAndTest(submissionpath, sourceTestPath):
         caseBinary = case.replace(".simplec","")
         outFile = case.replace(".simplec",".out")
 
-        out = subprocess.run(["./compile.sh", simpleCfile, case], 
+        try:
+            out = subprocess.run(["./compile.sh", simpleCfile, case], 
+                timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+            if out.returncode != 0:
+                output += error("compile.sh", case)
+                errorCount += 1
+                continue
+
+            out = subprocess.run(["./run.sh", caseLLfile],
+                    timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+            if out.returncode != 0:
+                output += error("run.sh", caseLLfile)
+                errorCount += 1
+                continue
+
+            out = subprocess.run(["diff", caseGroundTruth, outFile],
                 stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
-        if out.returncode != 0:
-            output += error("compile.sh", outFile)
+
+            if out.returncode != 0: #if the test case fails diff, increment error counter 
+                output += error("diff", outFile)
+                errorCount += 1 
+        except:
+            output +=  error("compile.sh", case)
             errorCount += 1
             continue
-
-        out = subprocess.run(["./run.sh", caseLLfile],
-                stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
-        if out.returncode != 0:
-            output += error("run.sh", outFile)
-            errorCount += 1
-            continue
-
-        out = subprocess.run(["diff", caseGroundTruth, outFile],
-                stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
-
-        if out.returncode != 0: #if the test case fails diff, increment error counter 
-            output += error("diff", outFile)
-            errorCount += 1 
         
     value = totalCount - errorCount
     output += repr((totalCount - errorCount)) + " test cases passed out of " + repr(totalCount)
