@@ -1,10 +1,13 @@
-from git import Repo, Git
-import csv
 import os
+import re
+import csv
+import sys
+import time
 import shutil
 import zipfile
-import re
-import sys
+import subprocess
+from git import Repo, Git
+from testcasesScript import buildAndTest
 
 
 # Unzips the submissions.zip file downloaded from HW1 and parses through the
@@ -38,7 +41,7 @@ def get_submissions(log):
                 if "/" in repository:
                     repository = repository.split("/")[0]
 
-                submissions.append([student_id, repository, 12])
+                submissions.append([student_id, repository, 0])
 
             except AttributeError:
                 repository = re.search("url=(.*)\"", data).group(1)
@@ -55,6 +58,7 @@ def get_submissions(log):
 def pull_checkout(submissions, log, project):
 
     student_repos = "./student_repos/"
+    checkout_pt = 1
 
     if os.path.isdir(student_repos):
         created_dir = False
@@ -82,9 +86,9 @@ def pull_checkout(submissions, log, project):
             
             if project in Repo(path).tags:
                 Git(path).checkout(sys.argv[1])
+                repository[2] = checkout_pt
             else:
                 log.write(repository[1] + ": " + project + " does not exists\n")
-                repository[2] = 0
 
 # Creates student directories and clones the remote repositories
 def make_repo(path, repository):
@@ -105,6 +109,28 @@ def make_repo(path, repository):
     return False
                    
 # TODO: run test cases and compute grade
+
+def run_test_cases(submissions, project):
+
+    make_pt = 1
+    test_pt = 10
+
+    for repository in submissions:
+        print(repository)
+        
+        if repository[2] != 0:
+            path = "./student_repos/" + repository[1]
+            subprocess.run(['make', 'clean'], cwd = path,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            if repository[1] != "Chengalang":
+                total, value, _ = buildAndTest(path, "./" + project)
+                           
+                if total is not None:
+                    repository[2] += make_pt + ((test_pt / total) * value)
+
+        print(repository)
+        
 
 # Submissions is a list of lists where each list inside relates to a specific
 # student containing the following:
@@ -137,4 +163,5 @@ submissions = get_submissions(log)
 
 pull_checkout(submissions, log, project)
 
+run_test_cases(submissions, project)
 log.close()
