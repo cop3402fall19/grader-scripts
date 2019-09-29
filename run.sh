@@ -12,15 +12,15 @@ groundtruth="${program}.groundtruth"
 echo "compiling and linking LLVM IR ${file}"
 clang -o "${program}" "${file}"
 echo "running ${program}"
-#"./${program}" > "${output}"
+"./${program}" > "${output}"
 
 # compare against ground truth output if available
-# if [ -f "${groundtruth}" ]; then
-    # diff "${groundtruth}" "${output}"
-    # result="${?}"
-    # if [ "${result}" == "0" ]; then
-        # echo "correct output of ${file}"
-    # else
-        # echo "INCORRECT output of ${file} compared to the ground truth output"
-    # fi
-# fi
+if [ -f "${groundtruth}" ]; then
+    diff "${groundtruth}" "${output}"
+    result="${?}"
+    if [ "${result}" == "0" ]; then
+        echo "correct output of ${file}"
+    else
+        echo "INCORRECT output of ${file} compared to the ground truth output"
+    fi
+fi
