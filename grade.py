@@ -2,11 +2,11 @@ import os
 import re
 import csv
 import sys
-from datetime import datetime, timedelta
 import shutil
 import zipfile
 import subprocess
 from git import Repo, Git
+from datetime import datetime, timedelta
 from testcasesScript import buildAndTest
 
 
@@ -45,7 +45,7 @@ def get_submissions():
 
             except AttributeError:
                 repository = re.search("url=(.*)\"", data).group(1)
-                output = "invalid github link: " + repository + "\n"
+                output = "invalid github link: " + repository
                 submissions.append(["", student_id, None, 0, output])
     
     shutil.rmtree(temp_dir)
@@ -65,7 +65,7 @@ def pull_checkout(submissions, project):
         os.mkdir(student_repos)
         created_dir = True
 
-    for repository in submissions:
+    for i, repository in enumerate(submissions):
         if repository[2] is not None:
             path = student_repos + repository[2]
 
@@ -73,15 +73,18 @@ def pull_checkout(submissions, project):
                 if make_repo(path, repository):
                     repository[2] = None
                     continue
+                print_update("Cloning", i, len(submissions),repository[2])
             else:
                 if os.path.isdir(path):
-#                    for remote in Repo(path).remotes:
-#                        remote.fetch()
-                        print("Fetching: " + repository[2])
+                    for remote in Repo(path).remotes:
+                        remote.fetch()
+                        print_update("Fetching", i,
+                                len(submissions), repository[2])
                 else:
                     if make_repo(path, repository):
                         repository[2] = None
                         continue
+                    print_update("Cloning", i, len(submissions),repository[2])
             
             if project in Repo(path).tags:
                 Git(path).checkout(project)
@@ -89,6 +92,7 @@ def pull_checkout(submissions, project):
             else:
                 repository[4] = project + " not found."
 
+    
 # Creates student directories and clones the remote repositories
 def make_repo(path, repository):
     
@@ -102,38 +106,39 @@ def make_repo(path, repository):
     
     git = url + repository[2] + ".git"
     Repo.clone_from(git, path)
-    print("Cloning: " + repository[1])
 
     return False
                    
+# Runs the modular test case script for each student and updates the grades
+# accordingly
 def run_test_cases(submissions, project):
 
     make_pt = 1
     test_pt = 10
 
-    count = 0
-    for repository in submissions:
+    for i, repository in enumerate(submissions):
         if repository[3] != 0:
             path = "./student_repos/" + repository[2]
             subprocess.run(['make', 'clean'], cwd = path,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
-
+            print_update("Grading", i, len(submissions),repository[2])
+            
             total, value, repository[4] = buildAndTest(path, "./" + project)
+            
             if total is not None:
                 repository[3] += make_pt + ((test_pt / total) * value)
-                count += 1
                 date = Repo(path).head.commit.committed_date
                 late = calculate_late(date, int(project[-1]))
                 if late > 0:
                     repository[4] += "\n-" + str(late) + " late point for deduction."
                     repository[3] -= late 
-                    
 
 
+# Calculates the late points based on due dates on syllabus.
 def calculate_late(date, project):
 
-    due = [datetime(2019, 9, 24, 19, 30, 0, 0).timestamp(),
+    due = [datetime(2019, 9, 29, 18, 30, 0, 0).timestamp(),
             datetime(2019, 10, 10, 19, 30, 0, 0).timestamp(),
             datetime(2019, 10, 29, 19, 30, 0, 0).timestamp(),
             datetime(2019, 11, 14, 19, 30, 0, 0).timestamp(),
@@ -150,43 +155,64 @@ def calculate_late(date, project):
     return 2
 
 
+# Creates the file import for webcourses with updated student grades.
 def update_grades(submissions, project):
 
     project = "Project " + project[-1]
-
     no_submission = []
+
+    # Creates the grade import csv for all students
     with open("students.csv", "r") as f, open("import.csv", "w") as t:
         reader = csv.DictReader(f)
-        headers = reader.fieldnames
-        project = [s for s in headers if project in s][0]
+        project = [s for s in reader.fieldnames if project in s][0]
+
+        headers = ["Student", "ID", "SIS User ID", 
+                    "SIS Login ID", "Section", project]
 
         writer = csv.DictWriter(t, fieldnames=headers)
         writer.writeheader()
-        
+
         for row in reader:
             exist = False
             for student in submissions:
                 if row["ID"] in student:
                     exist = True
-                    row[project] = student[2]
+                    row[project] = student[3]
+                    r = {}
+                    for e in headers:
+                        r.update({e:row[e]})
                     student[0] = row["Student"]
-                    writer.writerow(row)
+                    writer.writerow(r)
                     break
                 
             if not exist:
-                no_submission.append([row["Student"], row["ID"], "None", 0, 
-                        "No submission"])
+                no_submission.append([row["Student"], row["ID"], 
+                        "None", 0, "No submission."])
                 row[project] = 0
-                writer.writerow(row)
+                r = {}
+                for e in headers:
+                    r.update({e:row[e]})
+                writer.writerow(r)
 
+    # Sneaky sorting by last name
+    s = submissions + no_submission
+    s = [i[0].split()[1:2] + i for i in s if i[0] is not ""]
+    s.sort(key=lambda x: x[0])
+    s = [i[1:] for i in s]
+
+    # Creates a csv for assignment comments
     with open("comments.csv", "w") as f:
         headers = ["Student", "ID", "Grade", "Comment"]
         writer = csv.writer(f)
         writer.writerow(headers)
-        writer.writerows(submissions)
-        writer.writerows(no_submission)
+        writer.writerows(s)
+
+# Prints updates for the grading script
+def print_update(update, i, l, repository):
+    print(update + " " + str(i+1) + "/" + str(l) + ": " + repository)
 
 if __name__ == "__main__":
+
     if len(sys.argv) == 1:
         print("Please provide a project tag.")
         sys.exit()
@@ -200,3 +226,10 @@ if __name__ == "__main__":
     run_test_cases(submissions, project)
 
     update_grades(submissions, project)
+
+    # file clean up for incorrect makefile
+    for f in os.listdir("./"):
+        if f.endswith(".ll"):
+            os.remove("./" + f)
+
+    print("Grading complete!")
