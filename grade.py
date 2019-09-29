@@ -3,6 +3,7 @@ import re
 import csv
 import sys
 import time
+from datetime import datetime, timedelta
 import shutil
 import zipfile
 import subprocess
@@ -27,7 +28,7 @@ def get_submissions(log):
     with zipfile.ZipFile("./submissions.zip", "r") as ref:
         ref.extractall(temp_dir)
 
-    for filename in os.listdir(temp_dir):
+    for filename in os.listdir(temp_dir)[:10]:
         with open(temp_dir + "/" + filename, "r") as f:
             data = f.read()
                 
@@ -108,13 +109,12 @@ def make_repo(path, repository):
 
     return False
                    
-# TODO: git commit time 
-
 def run_test_cases(submissions, project):
 
     make_pt = 1
     test_pt = 10
 
+    count = 0
     for repository in submissions:
         if repository[2] != 0:
             path = "./student_repos/" + repository[1]
@@ -125,9 +125,34 @@ def run_test_cases(submissions, project):
                            
             if total is not None:
                 repository[2] += make_pt + ((test_pt / total) * value)
+                count += 1
+                date = Repo(path).head.commit.committed_date
+                repository[2] -= calculate_late(date, int(project[-1]))
+
+
 
 # TODO: Update grades
 # Creates the CSV file for import. 
+
+def calculate_late(date, project):
+
+    due = [datetime(2019, 9, 24, 19, 30, 0, 0).timestamp(),
+            datetime(2019, 10, 10, 19, 30, 0, 0).timestamp(),
+            datetime(2019, 10, 29, 19, 30, 0, 0).timestamp(),
+            datetime(2019, 11, 14, 19, 30, 0, 0).timestamp(),
+            datetime(2019, 12, 3, 19, 30, 0, 0).timestamp()]
+
+
+    if date - due[project] <= 0:
+        return 0
+    
+    late = datetime.fromtimestamp(due[project]) + timedelta(days=14)
+
+    if date - late.timestamp() <= 0:
+        return 1
+
+    return 2
+
 
 
 if len(sys.argv) == 1:
@@ -143,4 +168,6 @@ submissions = get_submissions(log)
 pull_checkout(submissions, log, project)
 
 run_test_cases(submissions, project)
+
+
 log.close()
