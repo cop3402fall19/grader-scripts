@@ -119,17 +119,15 @@ def run_test_cases(submissions, project):
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
 
-            if repository[2] != "Chengalang":
-                total, value, repository[4] = buildAndTest(path, "./" + project)
-                print(repository[4])
-                if total is not None:
-                    repository[3] += make_pt + ((test_pt / total) * value)
-                    count += 1
-                    date = Repo(path).head.commit.committed_date
-                    late = calculate_late(date, int(project[-1]))
-                    if late > 0:
-                        repository[4] += "\n-" + str(late) + " late point for deduction."
-                        repository[3] -= late 
+            total, value, repository[4] = buildAndTest(path, "./" + project)
+            if total is not None:
+                repository[3] += make_pt + ((test_pt / total) * value)
+                count += 1
+                date = Repo(path).head.commit.committed_date
+                late = calculate_late(date, int(project[-1]))
+                if late > 0:
+                    repository[4] += "\n-" + str(late) + " late point for deduction."
+                    repository[3] -= late 
                     
 
 
