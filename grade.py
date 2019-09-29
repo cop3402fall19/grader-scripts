@@ -108,7 +108,7 @@ def make_repo(path, repository):
 
     return False
                    
-# TODO: run test cases and compute grade
+# TODO: git commit time 
 
 def run_test_cases(submissions, project):
 
@@ -116,36 +116,15 @@ def run_test_cases(submissions, project):
     test_pt = 10
 
     for repository in submissions:
-        print(repository)
-        
         if repository[2] != 0:
             path = "./student_repos/" + repository[1]
             subprocess.run(['make', 'clean'], cwd = path,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
-            if repository[1] != "Chengalang":
-                total, value, _ = buildAndTest(path, "./" + project)
+            total, value, _ = buildAndTest(path, "./" + project)
                            
-                if total is not None:
-                    repository[2] += make_pt + ((test_pt / total) * value)
-
-        print(repository)
-        
-
-# Submissions is a list of lists where each list inside relates to a specific
-# student containing the following:
-#   
-#   list[0] = student id
-#   list[1] = repo name
-#   list[2] = grade
-
-# the grade is initially set to 12. If they did not have a valid repo name or
-# did not create a project tag, it was updated to zero. We can loop through
-# submissions and if the grade is already zero skip calling the modular grading script.
-#
-# I think we should have the testcassesScript.py return the value for
-# the number of passed and then use that to update the grade for the
-# students.
+            if total is not None:
+                repository[2] += make_pt + ((test_pt / total) * value)
 
 # TODO: Update grades
 # Creates the CSV file for import. 
