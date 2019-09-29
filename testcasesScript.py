@@ -12,14 +12,16 @@ def buildAndTest(submissionpath, sourceTestPath):
     copy_tree(sourceTestPath, testCasePath)
     
     testCases = glob.glob(os.path.join(testCasePath, "*.simplec"))
-    testCaseException = False 
 
-    try: 
-        subprocess.call(['make'], cwd = submissionpath, stdout=open(os.devnull, 'wb'))
-    except:
+    output = ""
+    out = subprocess.run(['make'], cwd = submissionpath,
+            stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+
+    if out.returncode != 0:
         output = "Failed -- exception on Make" # can't even compile the compiler 
-        return _, 1, output
-
+        shutil.rmtree(testCasePath) 
+        return None, None, output
+        
     simpleCfile = os.path.join(submissionpath, "simplec")
     totalCount = len(testCases)
     errorCount = 0
@@ -32,28 +34,40 @@ def buildAndTest(submissionpath, sourceTestPath):
         caseBinary = case.replace(".simplec","")
         outFile = case.replace(".simplec",".out")
 
-        try: 
-            subprocess.call(["./compile.sh", simpleCfile, case], stdout=open(os.devnull, 'wb'))
-            subprocess.call(["./run.sh", caseLLfile], stdout=open(os.devnull, 'wb'))
-            
-            diffCode = subprocess.call(["diff", caseGroundTruth, outFile])
-            if diffCode != 0: #if the test case fails diff, increment error counter 
-                errorCount += 1 
-        
-        except: # if any of the subprocesses throw Exceptions, fail the test case
-            testCaseException = True 
-            pass        
-        if testCaseException: # if any of the subprocesses throw Exceptions, fail the test case
+        out = subprocess.run(["./compile.sh", simpleCfile, case], 
+                stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+        if out.returncode != 0:
+            output += error("compile.sh", outFile)
             errorCount += 1
             continue
 
+        out = subprocess.run(["./run.sh", caseLLfile],
+                stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+        if out.returncode != 0:
+            output += error("run.sh", outFile)
+            errorCount += 1
+            continue
+
+        out = subprocess.run(["diff", caseGroundTruth, outFile],
+                stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+
+        if out.returncode != 0: #if the test case fails diff, increment error counter 
+            output += error("diff", outFile)
+            errorCount += 1 
+        
     value = totalCount - errorCount
-    output = repr((totalCount - errorCount)) + " test cases passed out of " + repr(totalCount)
+    output += repr((totalCount - errorCount)) + " test cases passed out of " + repr(totalCount)
     
+    os.remove(submissionpath + "/simplec")
     # delete temporary directory
     shutil.rmtree(testCasePath) 
  
     return totalCount, value, output 
+
+def error(app, f):
+
+    return "Failed -- exception on " + app + " for " + f + "\n"
+    
 
 if __name__ == "__main__":
 
