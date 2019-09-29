@@ -2,3 +2,5 @@
 *.zip
 /student_repos/*
 *.log
+/proj*/*
+/__pycache__/*
