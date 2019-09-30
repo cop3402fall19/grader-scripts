@@ -177,7 +177,8 @@ def update_grades(submissions, project):
             for student in submissions:
                 if row["ID"] in student:
                     exist = True
-                    row[project] = student[3]
+                    if row[project] < student[3]:
+                        row[project] = student[3]
                     r = {}
                     for e in headers:
                         r.update({e:row[e]})
