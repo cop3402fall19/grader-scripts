@@ -6,20 +6,25 @@ import subprocess
 from distutils.dir_util import copy_tree
 
 def buildAndTest(submissionpath, sourceTestPath):
+    script_path = os.path.dirname(os.path.realpath(__file__))
 
-    # create temporary directory so that previous students' results will not affect subsequent tests 
-    testCasePath = os.path.join(sourceTestPath, os.path.basename(submissionpath) + "temp")
-    copy_tree(sourceTestPath, testCasePath)
+    # create temporary directory so that previous students' results will not affect subsequent tests
+    testCasePath = sourceTestPath
     
     testCases = glob.glob(os.path.join(testCasePath, "*.simplec"))
 
+    print("# the following are all the commands run by this test script.  you can cut-and-paste them to run them by hand.")
+
     output = ""
+    if os.path.exists(submissionpath + "/simplec"):
+        os.remove(submissionpath + "/simplec")
+    print("# building your simplec compiler")
+    print("make")
     out = subprocess.run(['make'], cwd = submissionpath,
             stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
     if out.returncode != 0:
-        output = "Failed -- exception on Make" # can't even compile the compiler 
-        shutil.rmtree(testCasePath) 
+        output = "# ERROR running make failed.  Do you have a Makefile?" # can't even compile the compiler 
         return None, None, output
         
     simpleCfile = os.path.join(submissionpath, "simplec")
@@ -34,44 +39,54 @@ def buildAndTest(submissionpath, sourceTestPath):
         caseBinary = case.replace(".simplec","")
         outFile = case.replace(".simplec",".out")
 
+        print("\n# TESTING " + caseTestFile)
         try:
-            out = subprocess.run(["./compile.sh", simpleCfile, case], 
-                timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+            args = [os.path.join(script_path, "compile.sh"), simpleCfile, case]
+            command = " ".join(args)
+            print(command)
+            out = subprocess.run(args, 
+                                 timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
             if out.returncode != 0:
                 output += error("compile.sh", case)
                 errorCount += 1
                 continue
+            else: print ("# PASSED")
 
-            out = subprocess.run(["./run.sh", caseLLfile],
+            args = [os.path.join(script_path, "run.sh"), caseLLfile]
+            command = " ".join(args)
+            print(command)
+            out = subprocess.run(args,
                     timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
             if out.returncode != 0:
                 output += error("run.sh", caseLLfile)
                 errorCount += 1
                 continue
+            else: print ("# PASSED")
 
-            out = subprocess.run(["diff", caseGroundTruth, outFile],
+            args = ["diff", caseGroundTruth, outFile]
+            command = " ".join(args)
+            print(command)
+            out = subprocess.run(args,
                 stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
             if out.returncode != 0: #if the test case fails diff, increment error counter 
                 output += error("diff", outFile)
                 errorCount += 1 
-        except:
+            else: print ("# PASSED")
+        except Exception as e:
+            print (e)
             output +=  error("compile.sh", case)
             errorCount += 1
             continue
         
     value = totalCount - errorCount
     output += repr((totalCount - errorCount)) + " test cases passed out of " + repr(totalCount)
-    
-    os.remove(submissionpath + "/simplec")
-    # delete temporary directory
-    shutil.rmtree(testCasePath) 
- 
+     
     return totalCount, value, output 
 
 def error(app, f):
 
-    return "Failed -- exception on " + app + " for " + f + "\n"
+    return "# ERROR " + app + " failed on " + f + "\n"
     
 
 if __name__ == "__main__":
@@ -80,7 +95,8 @@ if __name__ == "__main__":
         submissionDirectory = sys.argv[1]
         sourceTestPath = sys.argv[2]
     except:
-        print("Please provide paths for both the folders containing test cases and the project repository")
+        print("USAGE: path/to/your/repo path/to/the/tests")
+        print("example: ./ ../syllabus/projects/tests/proj0/")
         sys.exit()
 
 

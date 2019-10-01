@@ -15,6 +15,7 @@ target="${stem}.ll"
 if [ -f "$compiler" ]; then
     echo "compiling ${file} to ${target}"
     "${compiler}" "${file}" > "${target}"
+    exit 0
 else
   echo "could not find your compiler at ${compiler}.  please check the path."
   exit 1

@@ -123,8 +123,13 @@ def run_test_cases(submissions, project):
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
             print_update("Grading", i, len(submissions),repository[2])
-            
-            total, value, repository[4] = buildAndTest(path, "./" + project)
+
+            realtestcasepath = "./" + project
+            studentbasename = os.path.basename(path)
+            testCasePath = os.path.join(realtestcasepath, "temp", studentbasename, "tests", project)
+            copy_tree(sourceTestPath, testCasePath)
+            total, value, repository[4] = buildAndTest(path, testCasePath)
+            shutil.rmtree(testCasePath) 
             
             if total is not None:
                 repository[3] += make_pt + ((test_pt / total) * value)

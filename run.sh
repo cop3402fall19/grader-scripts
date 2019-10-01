@@ -20,7 +20,11 @@ if [ -f "${groundtruth}" ]; then
     result="${?}"
     if [ "${result}" == "0" ]; then
         echo "correct output of ${file}"
+        exit 0
     else
         echo "INCORRECT output of ${file} compared to the ground truth output"
+        exit 0
     fi
+else
+  exit 0
 fi
