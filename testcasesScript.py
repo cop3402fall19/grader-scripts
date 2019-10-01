@@ -41,7 +41,7 @@ def buildAndTest(submissionpath, sourceTestPath):
 
         print("\n# TESTING " + caseTestFile)
         try:
-            args = [os.path.join(script_path, "compile.sh"), simpleCfile, case]
+            args = ["bash", os.path.join(script_path, "compile.sh"), simpleCfile, case]
             command = " ".join(args)
             print(command)
             out = subprocess.run(args, 
@@ -52,7 +52,7 @@ def buildAndTest(submissionpath, sourceTestPath):
                 continue
             else: print ("# PASSED")
 
-            args = [os.path.join(script_path, "run.sh"), caseLLfile]
+            args = ["bash", os.path.join(script_path, "run.sh"), caseLLfile]
             command = " ".join(args)
             print(command)
             out = subprocess.run(args,
