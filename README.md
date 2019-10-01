@@ -12,7 +12,7 @@ Go to your home directory
 
     cd
 
-(Note: if your repository was cloned inside the syllabus/projects directory, then `cd /vagrant` instead)
+(Note: if your repository was cloned inside the syllabus/projects directory and you are using vagrant, then `cd /vagrant` instead)
 
 Clone the repository
 
@@ -23,6 +23,8 @@ Clone the repository
 Go to your project's local clone, replacing USERID with your GitHub ID.  (This assumes the repo is in your home directory.)
 
     cd ~/project-USERID
+
+(Note: if your repository was cloned inside the syllabus/projects directory and you are using vagrant, then `cd /vagrant/project-USERID` instead)
 
 Run the grader script, which takes the path to your repository (`./` in this case) and the path to the test programs.
 
