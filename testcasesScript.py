@@ -13,6 +13,10 @@ def buildAndTest(submissionpath, sourceTestPath):
     
     testCases = glob.glob(os.path.join(testCasePath, "*.simplec"))
 
+    if len(testCases) == 0:
+        print("# no tests found.  double-check your path: ") + testCasePath
+        sys.exit()
+
     print("# the following are all the commands run by this test script.  you can cut-and-paste them to run them by hand.")
 
     output = ""

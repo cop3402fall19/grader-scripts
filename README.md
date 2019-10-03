@@ -4,7 +4,7 @@
 
 Be sure you have python version 3 installed.
 
-    sudo apt-get install python3
+    sudo apt-get install python3 python3-distutils
 
 ## Get the scripts repository
 
@@ -23,12 +23,16 @@ Clone the repository
 Go to your project's local clone, replacing USERID with your GitHub ID.  (This assumes the repo is in your home directory.)
 
     cd ~/project-USERID
+    # OR (but not both) for vagrant
+    cd /vagrant/project-USERID
 
 (Note: if your repository was cloned inside the syllabus/projects directory and you are using vagrant, then `cd /vagrant/project-USERID` instead)
 
 Run the grader script, which takes the path to your repository (`./` in this case) and the path to the test programs.
 
     python3 ../grader-scripts/testcasesScript.py ./ ../syllabus/projects/tests/proj0/
+    # OR (but not both) for vagrant
+    python3 ~/grader-scripts/testcasesScript.py ./ ../tests/proj0/
 
 Your output will look something like this
 
