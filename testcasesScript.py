@@ -63,7 +63,7 @@ def buildAndTest(submissionpath, sourceTestPath):
                 continue
             else: print ("# PASSED")
 
-            args = ["diff", caseGroundTruth, outFile]
+            args = ["diff", "--strip-trailing-cr", caseGroundTruth, outFile]
             command = " ".join(args)
             print(command)
             out = subprocess.run(args,

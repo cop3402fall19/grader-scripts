@@ -24,8 +24,8 @@ fi
 
 # compare against ground truth output if available
 if [ -f "${groundtruth}" ]; then
-    echo diff "${groundtruth}" "${output}"
-    diff "${groundtruth}" "${output}"
+    echo diff --strip-trailing-cr "${groundtruth}" "${output}"
+    diff --strip-trailing-cr "${groundtruth}" "${output}"
     result="${?}"
     if [ "${result}" == "0" ]; then
         echo "correct output of ${file}"
