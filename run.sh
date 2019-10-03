@@ -15,11 +15,11 @@ echo clang -o "${program}" "${file}"
 clang -o "${program}" "${file}"
 echo "running ${program}"
 if [ -f "${input}" ]; then
-  echo "./${program}" > "${output}" < "${input}"
-  "./${program}" > "${output}" < "${input}"
+  echo "${program}" > "${output}" < "${input}"
+  "${program}" > "${output}" < "${input}"
 else
-  echo "./${program}" > "${output}"
-  "./${program}" > "${output}"
+  echo "${program}" > "${output}"
+  "${program}" > "${output}"
 fi
 
 # compare against ground truth output if available
