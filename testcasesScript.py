@@ -19,7 +19,6 @@ def buildAndTest(submissionpath, sourceTestPath):
 
     print("# the following are all the commands run by this test script.  you can cut-and-paste them to run them by hand.")
 
-    output = ""
     if os.path.exists(submissionpath + "/simplec"):
         os.remove(submissionpath + "/simplec")
     print("# building your simplec compiler")
@@ -27,8 +26,9 @@ def buildAndTest(submissionpath, sourceTestPath):
     out = subprocess.run(['make'], cwd = submissionpath,
             stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
+    output = ""
     if out.returncode != 0:
-        output = "# ERROR running make failed.  Do you have a Makefile?" # can't even compile the compiler 
+        print("# ERROR running make failed.  Do you have a Makefile?") # can't even compile the compiler 
         return None, None, output
         
     simpleCfile = os.path.join(submissionpath, "simplec")
@@ -51,7 +51,7 @@ def buildAndTest(submissionpath, sourceTestPath):
             out = subprocess.run(args, 
                                  timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
             if out.returncode != 0:
-                output += error("compile.sh", case)
+                print(error("compile.sh", case))
                 errorCount += 1
                 continue
             else: print ("# PASSED")
@@ -62,7 +62,7 @@ def buildAndTest(submissionpath, sourceTestPath):
             out = subprocess.run(args,
                     timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
             if out.returncode != 0:
-                output += error("run.sh", caseLLfile)
+                print(error("run.sh", caseLLfile))
                 errorCount += 1
                 continue
             else: print ("# PASSED")
@@ -74,17 +74,17 @@ def buildAndTest(submissionpath, sourceTestPath):
                 stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
             if out.returncode != 0: #if the test case fails diff, increment error counter 
-                output += error("diff", outFile)
+                print(error("diff", outFile))
                 errorCount += 1 
             else: print ("# PASSED")
         except Exception as e:
             print (e)
-            output +=  error("compile.sh", case)
+            print(error("compile.sh", case))
             errorCount += 1
             continue
         
     value = totalCount - errorCount
-    output += repr((totalCount - errorCount)) + " test cases passed out of " + repr(totalCount)
+    print(repr((totalCount - errorCount)) + " test cases passed out of " + repr(totalCount))
      
     return totalCount, value, output 
 
