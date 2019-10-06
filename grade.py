@@ -8,6 +8,7 @@ import subprocess
 from git import Repo, Git
 from datetime import datetime, timedelta
 from testcasesScript import buildAndTest
+from distutils.dir_util import copy_tree
 
 
 # Unzips the submissions.zip file downloaded from HW1 and parses through the
@@ -125,9 +126,8 @@ def run_test_cases(submissions, project):
             print_update("Grading", i, len(submissions),repository[2])
 
             realtestcasepath = "./" + project
-            studentbasename = os.path.basename(path)
-            testCasePath = os.path.join(realtestcasepath, "temp", studentbasename, "tests", project)
-            copy_tree(sourceTestPath, testCasePath)
+            testCasePath = os.path.join(realtestcasepath, repository[2])
+            copy_tree(realtestcasepath, testCasePath)
             total, value, repository[4] = buildAndTest(path, testCasePath)
             shutil.rmtree(testCasePath) 
             
@@ -136,14 +136,14 @@ def run_test_cases(submissions, project):
                 date = Repo(path).head.commit.committed_date
                 late = calculate_late(date, int(project[-1]))
                 if late > 0:
-                    repository[4] += "\n-" + str(late) + " late point for deduction."
+                    repository[4] += "\n-" + str(late) + " late point deduction."
                     repository[3] -= late 
 
 
 # Calculates the late points based on due dates on syllabus.
 def calculate_late(date, project):
 
-    due = [datetime(2019, 9, 29, 18, 30, 0, 0).timestamp(),
+    due = [datetime(2019, 10, 8, 19, 30, 0, 0).timestamp(),
             datetime(2019, 10, 10, 19, 30, 0, 0).timestamp(),
             datetime(2019, 10, 29, 19, 30, 0, 0).timestamp(),
             datetime(2019, 11, 14, 19, 30, 0, 0).timestamp(),
@@ -165,6 +165,7 @@ def update_grades(submissions, project):
 
     project = "Project " + project[-1]
     no_submission = []
+    comments = []
 
     # Creates the grade import csv for all students
     with open("students.csv", "r") as f, open("import.csv", "w") as t:
@@ -182,17 +183,28 @@ def update_grades(submissions, project):
             for student in submissions:
                 if row["ID"] in student:
                     exist = True
-                    if row[project] < student[3]:
+                    if row[project] == "":
                         row[project] = student[3]
-                    r = {}
-                    for e in headers:
-                        r.update({e:row[e]})
-                    student[0] = row["Student"]
-                    writer.writerow(r)
-                    break
+                        r = {}
+                        for e in headers:
+                            r.update({e:row[e]})
+                        student[0] = row["Student"]
+                        writer.writerow(r)
+                        comments.append(student)
+                        break
+
+                    if float(row[project]) < student[3]:
+                        row[project] = student[3]
+                        r = {}
+                        for e in headers:
+                            r.update({e:row[e]})
+                        student[0] = row["Student"]
+                        writer.writerow(r)
+                        comments.append(student)
+                        break
                 
             if not exist:
-                no_submission.append([row["Student"], row["ID"], 
+                comments.append([row["Student"], row["ID"], 
                         "None", 0, "No submission."])
                 row[project] = 0
                 r = {}
@@ -201,8 +213,7 @@ def update_grades(submissions, project):
                 writer.writerow(r)
 
     # Sneaky sorting by last name
-    s = submissions + no_submission
-    s = [i[0].split()[1:2] + i for i in s if i[0] is not ""]
+    s = [i[0].split()[1:2] + i for i in comments if i[0] is not ""]
     s.sort(key=lambda x: x[0])
     s = [i[1:] for i in s]
 

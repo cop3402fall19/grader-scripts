@@ -3,9 +3,9 @@ import sys
 import glob 
 import shutil 
 import subprocess 
-from distutils.dir_util import copy_tree
 
 def buildAndTest(submissionpath, sourceTestPath):
+    
     script_path = os.path.dirname(os.path.realpath(__file__))
 
     # create temporary directory so that previous students' results will not affect subsequent tests
@@ -27,8 +27,10 @@ def buildAndTest(submissionpath, sourceTestPath):
             stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
     output = ""
+    err = ""
     if out.returncode != 0:
-        print("# ERROR running make failed.  Do you have a Makefile?") # can't even compile the compiler 
+        output += "# ERROR running make failed."  
+        print(output + " Do you have a Makefile?") # can't even compile the compiler 
         return None, None, output
         
     simpleCfile = os.path.join(submissionpath, "simplec")
@@ -51,7 +53,9 @@ def buildAndTest(submissionpath, sourceTestPath):
             out = subprocess.run(args, 
                                  timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
             if out.returncode != 0:
-                print(error("compile.sh", case))
+                err = error("compile.sh", case)
+                print(err)
+                output += err
                 errorCount += 1
                 continue
             else: print ("# PASSED")
@@ -62,7 +66,9 @@ def buildAndTest(submissionpath, sourceTestPath):
             out = subprocess.run(args,
                     timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
             if out.returncode != 0:
-                print(error("run.sh", caseLLfile))
+                err = error("run.sh", caseLLfile)
+                print(err)
+                output += err
                 errorCount += 1
                 continue
             else: print ("# PASSED")
@@ -74,18 +80,27 @@ def buildAndTest(submissionpath, sourceTestPath):
                 stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
             if out.returncode != 0: #if the test case fails diff, increment error counter 
-                print(error("diff", outFile))
+                err = error("diff", outFile)
+                print(err)
+                output += err
                 errorCount += 1 
             else: print ("# PASSED")
         except Exception as e:
-            print (e)
-            print(error("compile.sh", case))
+            print(str(e))
+            output += str(e) + "\n" 
+            err = error("compile.sh", case)
+            print(err)
+            output += err
             errorCount += 1
             continue
         
     value = totalCount - errorCount
-    print(repr((totalCount - errorCount)) + " test cases passed out of " + repr(totalCount))
-     
+    
+    test_pass = repr(value) + " test cases passed out of " + repr(totalCount)
+    print(test_pass)
+
+    output += test_pass
+    
     return totalCount, value, output 
 
 def error(app, f):
@@ -104,6 +119,5 @@ if __name__ == "__main__":
         sys.exit()
 
 
-    _, _, output = buildAndTest(submissionDirectory, sourceTestPath)
-    print(output)
+    buildAndTest(submissionDirectory, sourceTestPath)
 
