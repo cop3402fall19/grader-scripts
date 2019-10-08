@@ -10,8 +10,15 @@ def buildAndTest(submissionpath, sourceTestPath):
 
     # create temporary directory so that previous students' results will not affect subsequent tests
     testCasePath = sourceTestPath
-    
+
     testCases = glob.glob(os.path.join(testCasePath, "*.simplec"))
+
+    for i in glob.glob(os.path.join(submissionpath, "*.o")):
+        if os.path.exists(i):
+            os.remove(i)
+    progname = os.path.join(submissionpath, "simplec")
+    if os.path.exists(progname):
+        os.remove(progname)
 
     if len(testCases) == 0:
         print("# no tests found.  double-check your path: " + testCasePath)
@@ -23,7 +30,7 @@ def buildAndTest(submissionpath, sourceTestPath):
         os.remove(submissionpath + "/simplec")
     print("# building your simplec compiler")
     print("make")
-    out = subprocess.run(['make'], cwd = submissionpath,
+    out = subprocess.run(['make', 'clean', 'all'], cwd = submissionpath,
             stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
     output = ""
