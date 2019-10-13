@@ -125,7 +125,7 @@ def run_test_cases(submissions, project):
             
             print_update("Grading", i, len(submissions),repository[2])
 
-            realtestcasepath = "./" + project
+            realtestcasepath = "../grader-project/tests/" + project
             testCasePath = os.path.join(realtestcasepath, repository[2])
             copy_tree(realtestcasepath, testCasePath)
             total, value, repository[4] = buildAndTest(path, testCasePath)
