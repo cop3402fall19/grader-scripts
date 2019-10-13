@@ -30,7 +30,7 @@ def buildAndTest(submissionpath, sourceTestPath):
         os.remove(submissionpath + "/simplec")
     print("# building your simplec compiler")
     print("make")
-    out = subprocess.run(['make', 'clean', 'all'], cwd = submissionpath,
+    out = subprocess.run(['make'], cwd = submissionpath,
             stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
     output = ""
