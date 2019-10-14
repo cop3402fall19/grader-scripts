@@ -8,6 +8,7 @@ file="${1}"
 program="${file%.ll}"
 input="${program}.in"
 output="${program}.out"
+erroutput="${program}.err"
 groundtruth="${program}.groundtruth"
 
 echo "compiling and linking LLVM IR ${file}"
@@ -15,11 +16,11 @@ echo clang -o "${program}" "${file}"
 clang -o "${program}" "${file}"
 echo "running ${program}"
 if [ -f "${input}" ]; then
-  echo "${program}" > "${output}" < "${input}"
-  "${program}" > "${output}" < "${input}"
+  echo "${program}" > "${output}" 2> "${erroutput}" < "${input}"
+  "${program}" > "${output}" 2> "${erroutput}" < "${input}"
 else
-  echo "${program}" > "${output}"
-  "${program}" > "${output}"
+  echo "${program}" > "${output}" 2> "${erroutput}"
+  "${program}" > "${output}" 2> "${erroutput}"
 fi
 
 # compare against ground truth output if available
