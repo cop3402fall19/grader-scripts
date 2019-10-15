@@ -49,7 +49,7 @@ def buildAndTest(submissionpath, testCasePath):
 
         print("\n# TESTING " + caseTestFile)
         try:
-            args = ["bash", os.path.join(submission_path, "compile.sh"), simpleCfile, case]
+            args = ["bash", os.path.join(submissionpath, "compile.sh"), simpleCfile, case]
             command = " ".join(args)
             print(command)
             out = subprocess.run(args, 
