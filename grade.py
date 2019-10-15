@@ -134,7 +134,6 @@ def run_test_cases(submissions, project):
             
             if total is not None:
                 repository[3] += make_pt + ((test_pt / total) * value)
-                print(Repo(path).head.commit.committer_tz_offset)
                 date = Repo(path).head.commit.committed_date
                 late = calculate_late(date, int(project[-1]))
                 if late > 0:
@@ -147,7 +146,6 @@ def calculate_late(date, project):
     
     est = pytz.timezone('US/Eastern')
 
-    print(date)
     due = [datetime(2019, 10, 8, 19, 30, 0, 0),
             datetime(2019, 10, 10, 19, 30, 0, 0),
             datetime(2019, 10, 29, 19, 30, 0, 0),
@@ -186,27 +184,28 @@ def update_grades(submissions, project):
         for row in reader:
             exist = False
             for student in submissions:
-                if row["ID"] in student:
-                    exist = True
-                    if row[project] == "":
-                        row[project] = student[3]
-                        r = {}
-                        for e in headers:
-                            r.update({e:row[e]})
-                        student[0] = row["Student"]
-                        writer.writerow(r)
-                        comments.append(student)
-                        break
+                if student[3] > 0:
+                    if row["ID"] in student:
+                        exist = True
+                        if row[project] == "":
+                            row[project] = student[3]
+                            r = {}
+                            for e in headers:
+                                r.update({e:row[e]})
+                            student[0] = row["Student"]
+                            writer.writerow(r)
+                            comments.append(student)
+                            break
 
-                    if float(row[project]) < student[3]:
-                        row[project] = student[3]
-                        r = {}
-                        for e in headers:
-                            r.update({e:row[e]})
-                        student[0] = row["Student"]
-                        writer.writerow(r)
-                        comments.append(student)
-                        break
+                        if float(row[project]) < student[3]:
+                            row[project] = student[3]
+                            r = {}
+                            for e in headers:
+                                r.update({e:row[e]})
+                            student[0] = row["Student"]
+                            writer.writerow(r)
+                            comments.append(student)
+                            break
                 
             if not exist:
                 comments.append([row["Student"], row["ID"], 
