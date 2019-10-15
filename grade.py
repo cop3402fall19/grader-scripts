@@ -2,6 +2,7 @@ import os
 import re
 import csv
 import sys
+import pytz
 import shutil
 import zipfile
 import subprocess
@@ -133,6 +134,7 @@ def run_test_cases(submissions, project):
             
             if total is not None:
                 repository[3] += make_pt + ((test_pt / total) * value)
+                print(Repo(path).head.commit.committer_tz_offset)
                 date = Repo(path).head.commit.committed_date
                 late = calculate_late(date, int(project[-1]))
                 if late > 0:
@@ -142,17 +144,20 @@ def run_test_cases(submissions, project):
 
 # Calculates the late points based on due dates on syllabus.
 def calculate_late(date, project):
+    
+    est = pytz.timezone('US/Eastern')
 
-    due = [datetime(2019, 10, 8, 19, 30, 0, 0).timestamp(),
-            datetime(2019, 10, 10, 19, 30, 0, 0).timestamp(),
-            datetime(2019, 10, 29, 19, 30, 0, 0).timestamp(),
-            datetime(2019, 11, 14, 19, 30, 0, 0).timestamp(),
-            datetime(2019, 12, 3, 19, 30, 0, 0).timestamp()]
+    print(date)
+    due = [datetime(2019, 10, 8, 19, 30, 0, 0),
+            datetime(2019, 10, 10, 19, 30, 0, 0),
+            datetime(2019, 10, 29, 19, 30, 0, 0),
+            datetime(2019, 11, 14, 19, 30, 0, 0),
+            datetime(2019, 12, 3, 19, 30, 0, 0)]
 
-    if date - due[project] <= 0:
+    if date - est.localize(due[project]).timestamp() <= 0:
         return 0
     
-    late = datetime.fromtimestamp(due[project]) + timedelta(days=14)
+    late = datetime.fromtimestamp(est.localize(due[project]).timestamp()) + timedelta(days=14)
 
     if date - late.timestamp() <= 0:
         return 1
