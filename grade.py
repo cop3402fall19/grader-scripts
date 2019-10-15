@@ -184,9 +184,9 @@ def update_grades(submissions, project):
         for row in reader:
             exist = False
             for student in submissions:
-                if student[3] > 0:
-                    if row["ID"] in student:
-                        exist = True
+                if row["ID"] in student:
+                    exist = True
+                    if student[3] > 0:
                         if row[project] == "":
                             row[project] = student[3]
                             r = {}
