@@ -91,6 +91,8 @@ def pull_checkout(submissions, project):
             if project in Repo(path).tags:
                 Git(path).checkout(project)
                 repository[3] = checkout_pt
+                shutil.copy("./compile.sh", path)
+                shutil.copy("./run.sh", path)
             else:
                 repository[4] = project + " not found."
 
@@ -118,18 +120,22 @@ def run_test_cases(submissions, project):
     make_pt = 1
     test_pt = 10
 
+    realtestcasepath = "/home/vagrant/grader-project/tests/" + project
+    cwd = os.getcwd() 
+    
     for i, repository in enumerate(submissions):
         if repository[3] != 0:
-            path = "./student_repos/" + repository[2]
+            path = cwd + "/student_repos/" + repository[2]
             subprocess.run(['make', 'clean'], cwd = path,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
             print_update("Grading", i, len(submissions),repository[2])
 
-            realtestcasepath = "../grader-project/tests/" + project
             testCasePath = os.path.join(realtestcasepath, repository[2])
             copy_tree(realtestcasepath, testCasePath)
+            os.chdir(path)
             total, value, repository[4] = buildAndTest(path, testCasePath)
+            os.chdir(cwd)
             shutil.rmtree(testCasePath) 
             
             if total is not None:

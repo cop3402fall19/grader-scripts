@@ -78,7 +78,7 @@ def buildAndTest(submissionpath, testCasePath):
             args = ["diff", "--strip-trailing-cr", caseGroundTruth, outFile]
             command = " ".join(args)
             print(command)
-            out = subprocess.run(args, stderr = subprocess.DEVNULL)
+            out = subprocess.run(args, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
             if out.returncode != 0: #if the test case fails diff, increment error counter 
                 err = error("diff", outFile)
