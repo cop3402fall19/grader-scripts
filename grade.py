@@ -137,6 +137,7 @@ def run_test_cases(submissions, project):
             total, value, repository[4] = buildAndTest(path, testCasePath)
             os.chdir(cwd)
             shutil.rmtree(testCasePath) 
+
             
             if total is not None:
                 repository[3] += make_pt + ((test_pt / total) * value)
@@ -145,6 +146,9 @@ def run_test_cases(submissions, project):
                 if late > 0:
                     repository[4] += "\n-" + str(late) + " late point deduction."
                     repository[3] -= late 
+                    
+        est = pytz.timezone('US/Eastern')
+        repository[4] += "\nGraded at " + str(datetime.now(est).strftime('%I:%M %p %m/%d/%Y'))
 
 
 # Calculates the late points based on due dates on syllabus.
