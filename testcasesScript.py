@@ -4,8 +4,13 @@ import glob
 import shutil 
 import subprocess 
 
-def buildAndTest(submissionpath, testCasePath):
+def buildAndTest(submissionpath, sourceTestPath):
     
+    script_path = os.path.dirname(os.path.realpath(__file__))
+
+    # create temporary directory so that previous students' results will not affect subsequent tests
+    testCasePath = sourceTestPath
+
     testCases = glob.glob(os.path.join(testCasePath, "*.simplec"))
 
     for i in glob.glob(os.path.join(submissionpath, "*.o")):
@@ -49,7 +54,7 @@ def buildAndTest(submissionpath, testCasePath):
 
         print("\n# TESTING " + caseTestFile)
         try:
-            args = ["bash", os.path.join(submission_path, "compile.sh"), simpleCfile, case]
+            args = ["bash", os.path.join(script_path, "compile.sh"), simpleCfile, case]
             command = " ".join(args)
             print(command)
             out = subprocess.run(args, 
@@ -62,7 +67,7 @@ def buildAndTest(submissionpath, testCasePath):
                 continue
             else: print ("# PASSED")
 
-            args = ["bash", os.path.join(submission_path, "run.sh"), caseLLfile]
+            args = ["bash", os.path.join(script_path, "run.sh"), caseLLfile]
             command = " ".join(args)
             print(command)
             out = subprocess.run(args,
@@ -78,7 +83,8 @@ def buildAndTest(submissionpath, testCasePath):
             args = ["diff", "--strip-trailing-cr", caseGroundTruth, outFile]
             command = " ".join(args)
             print(command)
-            out = subprocess.run(args, stderr = subprocess.DEVNULL)
+            out = subprocess.run(args,
+                stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
             if out.returncode != 0: #if the test case fails diff, increment error counter 
                 err = error("diff", outFile)
@@ -113,12 +119,12 @@ if __name__ == "__main__":
 
     try:
         submissionDirectory = sys.argv[1]
-        testCasePath = sys.argv[2]
+        sourceTestPath = sys.argv[2]
     except:
         print("USAGE: path/to/your/repo path/to/the/tests")
         print("example: ./ ../syllabus/projects/tests/proj0/")
         sys.exit()
 
 
-    buildAndTest(submissionDirectory, testCasePath)
+    buildAndTest(submissionDirectory, sourceTestPath)
 
