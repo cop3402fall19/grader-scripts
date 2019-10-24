@@ -11,10 +11,11 @@ compiler="${1}"
 file="${2}"
 stem="${file%.simplec}"
 target="${stem}.ll"
+erroutput="${stem}.err"
 
 if [ -f "$compiler" ]; then
-    echo "compiling ${file} to ${target}"
-    "${compiler}" "${file}" > "${target}"
+    echo "\"${compiler}\" \"${file}\" > \"${target}\" 2> \"${erroutput}\""
+    "${compiler}" "${file}" > "${target}" 2> "${erroutput}"
     exit 0
 else
   echo "could not find your compiler at ${compiler}.  please check the path."

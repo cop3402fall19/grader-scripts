@@ -48,9 +48,11 @@ def buildAndTest(submissionpath, sourceTestPath):
     for case in testCases:
         caseTestFile = case
         caseGroundTruth = case.replace(".simplec",".groundtruth")
+        caseGroundTruthErr = case.replace(".simplec",".groundtrutherr")
         caseLLfile = case.replace(".simplec",".ll")
         caseBinary = case.replace(".simplec","")
         outFile = case.replace(".simplec",".out")
+        errFile = case.replace(".simplec",".err")
 
         print("\n# TESTING " + caseTestFile)
         try:
@@ -65,33 +67,47 @@ def buildAndTest(submissionpath, sourceTestPath):
                 output += err
                 errorCount += 1
                 continue
-            else: print ("# PASSED")
+            else: print ("# SUCCESS")
 
-            args = ["bash", os.path.join(script_path, "run.sh"), caseLLfile]
-            command = " ".join(args)
-            print(command)
-            out = subprocess.run(args,
-                    timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
-            if out.returncode != 0:
-                err = error("run.sh", caseLLfile)
-                print(err)
-                output += err
-                errorCount += 1
-                continue
-            else: print ("# PASSED")
+            if os.path.exists(caseGroundTruth):
+                args = ["bash", os.path.join(script_path, "run.sh"), caseLLfile]
+                command = " ".join(args)
+                print(command)
+                out = subprocess.run(args,
+                        timeout=5, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+                if out.returncode != 0:
+                    err = error("run.sh", caseLLfile)
+                    print(err)
+                    output += err
+                    errorCount += 1
+                    continue
+                else: print ("# SUCCESS")
+                
+                args = ["diff", "--strip-trailing-cr", caseGroundTruth, outFile]
+                command = " ".join(args)
+                print(command)
+                out = subprocess.run(args,
+                    stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
-            args = ["diff", "--strip-trailing-cr", caseGroundTruth, outFile]
-            command = " ".join(args)
-            print(command)
-            out = subprocess.run(args,
-                stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+                if out.returncode != 0: #if the test case fails diff, increment error counter 
+                    err = error("diff", outFile)
+                    print(err)
+                    output += err
+                    errorCount += 1 
+                else: print ("# SUCCESS")
+            elif os.path.exists(caseGroundTruthErr):
+                args = ["diff", "--strip-trailing-cr", '--unchanged-group-format=""', '--old-group-format="%<"', '--new-group-format=""', caseGroundTruthErr, errFile]
+                command = " ".join(args)
+                print(command)
+                out = subprocess.run(args,
+                    stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
-            if out.returncode != 0: #if the test case fails diff, increment error counter 
-                err = error("diff", outFile)
-                print(err)
-                output += err
-                errorCount += 1 
-            else: print ("# PASSED")
+                if out.returncode != 0: #if the test case fails diff, increment error counter 
+                    err = error("diff", errFile)
+                    print(err)
+                    output += err
+                    errorCount += 1 
+                else: print ("# SUCCESS")
         except Exception as e:
             print(str(e))
             output += str(e) + "\n" 
