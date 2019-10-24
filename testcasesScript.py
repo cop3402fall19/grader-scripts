@@ -83,11 +83,10 @@ def buildAndTest(submissionpath, sourceTestPath):
                     continue
                 else: print ("# SUCCESS")
                 
-                args = ["diff", "--strip-trailing-cr", caseGroundTruth, outFile]
+                args = ["diff", "--strip-trailing-cr", "-Z", caseGroundTruth, outFile]
                 command = " ".join(args)
                 print(command)
-                out = subprocess.run(args,
-                    stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+                out = subprocess.run(args) #, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
                 if out.returncode != 0: #if the test case fails diff, increment error counter 
                     err = error("diff", outFile)
@@ -96,11 +95,10 @@ def buildAndTest(submissionpath, sourceTestPath):
                     errorCount += 1 
                 else: print ("# SUCCESS")
             elif os.path.exists(caseGroundTruthErr):
-                args = ["diff", "--strip-trailing-cr", '--unchanged-group-format=""', '--old-group-format="%<"', '--new-group-format=""', caseGroundTruthErr, errFile]
+                args = ["diff", "--strip-trailing-cr", "-Z", '--unchanged-group-format=""', '--old-group-format="%<"', '--new-group-format=""', caseGroundTruthErr, errFile]
                 command = " ".join(args)
                 print(command)
-                out = subprocess.run(args,
-                    stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+                out = subprocess.run(args) #, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
                 if out.returncode != 0: #if the test case fails diff, increment error counter 
                     err = error("diff", errFile)
