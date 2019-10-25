@@ -95,7 +95,7 @@ def buildAndTest(submissionpath, sourceTestPath):
                     errorCount += 1 
                 else: print ("# SUCCESS")
             elif os.path.exists(caseGroundTruthErr):
-                args = ["diff", "--strip-trailing-cr", "-Z", '--unchanged-group-format=""', r'--old-group-format=%<', '--new-group-format=""', caseGroundTruthErr, errFile]
+                args = ["diff", "--strip-trailing-cr", "-Z", '--unchanged-group-format=""', r'--old-group-format="%<"', '--new-group-format=""', caseGroundTruthErr, errFile]
                 command = " ".join(args)
                 print(command)
                 out = subprocess.run(args) #, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
