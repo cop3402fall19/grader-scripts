@@ -95,13 +95,17 @@ def buildAndTest(submissionpath, sourceTestPath):
                     errorCount += 1 
                 else: print ("# SUCCESS")
             elif os.path.exists(caseGroundTruthErr):
-                args = ["diff", "--strip-trailing-cr", "-Z", '--unchanged-group-format=""', r'--old-group-format=%<', '--new-group-format=""', caseGroundTruthErr, errFile]
-                command = " ".join(args)
+                with open(caseGroundTruthErr) as f:
+                    lines = f.readlines()
+                    match = '^' + lines[0].strip() + '$'
+                # args = ["diff", "--strip-trailing-cr", "-Z", '--unchanged-group-format=', r'--old-group-format=%<', '--new-group-format=', caseGroundTruthErr, errFile]
+                args = ["egrep", match, errFile]
+                command = " ".join(["egrep", '"' + match + '"', errFile])
                 print(command)
                 out = subprocess.run(args) #, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
                 if out.returncode != 0: #if the test case fails diff, increment error counter 
-                    err = error("diff", errFile)
+                    err = error("grep", errFile)
                     print(err)
                     output += err
                     errorCount += 1 
