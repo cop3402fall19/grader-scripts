@@ -120,18 +120,20 @@ def run_test_cases(submissions, project):
 
     for i, repository in enumerate(submissions):
         if repository[3] != 0:
-            path = "./student_repos/" + repository[2]
+            path = "/home/vagrant/grader-scripts/student_repos/" + repository[2]
             subprocess.run(['make', 'clean'], cwd = path,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
             print_update("Grading", i, len(submissions),repository[2])
 
-            realtestcasepath = "../grader-project/tests/" + project
+            realtestcasepath = "/home/vagrant/grader-project/tests/" + project
             testCasePath = os.path.join(realtestcasepath, repository[2])
             copy_tree(realtestcasepath, testCasePath)
+            cwd = os.getcwd()
+            os.chdir(path)
             total, value, repository[4] = buildAndTest(path, testCasePath)
+            os.chdir(cwd)
             shutil.rmtree(testCasePath) 
-
             
             if total is not None:
                 repository[3] += make_pt + ((test_pt / total) * value)
