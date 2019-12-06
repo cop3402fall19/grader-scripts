@@ -156,7 +156,7 @@ def calculate_late(date, project):
             datetime(2019, 10, 10, 19, 30, 0, 0),
             datetime(2019, 10, 29, 19, 30, 0, 0),
             datetime(2019, 11, 14, 19, 30, 0, 0),
-            datetime(2019, 12, 3, 19, 30, 0, 0)]
+            datetime(2019, 12, 5, 19, 30, 0, 0)]
 
     if date - est.localize(due[project]).timestamp() <= 0:
         return 0
